@@ -20,8 +20,9 @@ export function sketch(p: p5_T, state: State) {
     const agentX = new Agent(state, Agent.type.MINIMAX_ALPHA_BETA_PRUNING, Agent.piece.X, true);
     let depth: number;
 
-    p.setup = function () {
-        p.createCanvas(900, 900);
+    p.setup = function() {
+        const WH = 855
+        p.createCanvas(WH, WH);
         // Allow the Agent to make the first move. Comment to allow the human to play first.
         // makeAIMove();
         // We run it once to warm up the function as the first run seems to be the slowest.
@@ -31,7 +32,7 @@ export function sketch(p: p5_T, state: State) {
 
     p.mouseClicked = mouseClicked;
 
-    p.draw = function draw() {
+    p.draw = function() {
         p.background(255);
 
         const w = p.width / BOARD_LEN;
@@ -83,7 +84,7 @@ export function sketch(p: p5_T, state: State) {
             const paragraph = document.createElement("p");
             paragraph.style.fontSize = "xxx-large";
             paragraph.innerText = `${getSymbol(winner)} wins!!!`;
-            document.querySelector("main")?.appendChild(paragraph);
+            // document.querySelector("#sketch")?.appendChild(paragraph);
             console.log("VICTORY FOR", getSymbol(winner));
             game.gameOver = true;
             p.noLoop();

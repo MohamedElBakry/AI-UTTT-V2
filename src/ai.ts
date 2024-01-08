@@ -30,14 +30,14 @@ export class Agent {
     piece: Piece;
     opponentPiece: Piece;
     workers?: any[];
-    
+
     /**
      * @param {State} state                         The current 'state' of the game.
      * @param {Agent.type|number} type              The type of agent to be initialised. Future iterations of this project should include an MCTS type agent
      * @param {Agent.piece|number} [piece=piece.X]  The type of piece to use.
      * @param {boolean} [isWorker=false]            Indicates if this agent is a worker or not so that if it is no worker is spawned.
      */
-    constructor(state: State, type: AgentType, piece: Piece | number=Agent.piece.X, isWorker: boolean=false) {
+    constructor(state: State, type: AgentType, piece: Piece | number = Agent.piece.X, isWorker: boolean = false) {
         this.state = state;
         this.type = type;
         this.piece = piece;
@@ -50,16 +50,16 @@ export class Agent {
      * Create an AI Object from a string
      * @param {String} string The string to create the Agent from.
      */
-    static workerFrom(string: string) {
-        const agentObj = JSON.parse(string);
-        return new Agent(agentObj.state, agentObj.type, agentObj.piece, true);
-    }
+    // static workerFrom(string: string) {
+    //     const agentObj = JSON.parse(string);
+    //     return new Agent(agentObj.state, agentObj.type, agentObj.piece, true);
+    // }
 
     /** Generates an array of {x, y} object legal moves given the board state.
      * @param {State} state The current state of the game.
      * @returns {object[]} An array of objects with X and Y components representing a list of legal moves given the state.
      */
-    static getLegalMoves(state: State): {x: number, y: number}[] {
+    static getLegalMoves(state: State): { x: number, y: number }[] {
         const moves = [];
 
         for (let xs = 0; xs < state.board.length; xs++) {
@@ -73,41 +73,41 @@ export class Agent {
     }
 
     // TODO: move to State class
-    simulateMove(localState: State, move: {x: number, y: number}) {
+    simulateMove(localState: State, move: { x: number, y: number }) {
         localState.board[move.x][move.y] = this.piece;
         localState.previousMove = move;
         localState = new State(localState.board, localState.subBoardStates, localState.previousMove, localState.turn, true);
         return localState;
     }
 
-    async getScoresFromThreads(workBatches: any, numWorkers: number, workers: any) {
-        const results: [number, number][] = [];
-        // const workers = [...Array(numWorkers)].map(_ => new Worker("ai-worker.js"));
-        let workDone = 0;
+    // async getScoresFromThreads(workBatches: any, numWorkers: number, workers: any) {
+    //     const results: [number, number][] = [];
+    //     // const workers = [...Array(numWorkers)].map(_ => new Worker("ai-worker.js"));
+    //     let workDone = 0;
 
-        const promise = new Promise((resolve, _) => {
-            for (const worker of workers) {
-                worker.onmessage = (event: any) => {
-                    workDone++;
-                    const [score, move] = event.data;
-                    // const [score, move] = [event.data[0], workBatches[i % numWorkers][6]];
-                    if (typeof score !== 'number')
-                        return;
+    //     const promise = new Promise((resolve, _) => {
+    //         for (const worker of workers) {
+    //             worker.onmessage = (event: any) => {
+    //                 workDone++;
+    //                 const [score, move] = event.data;
+    //                 // const [score, move] = [event.data[0], workBatches[i % numWorkers][6]];
+    //                 if (typeof score !== 'number')
+    //                     return;
 
-                    results.push([score, move]);
-                    if (workDone === workBatches.length) {
-                        resolve([results]);
-                    }
-                }
-            };
-        });
+    //                 results.push([score, move]);
+    //                 if (workDone === workBatches.length) {
+    //                     resolve([results]);
+    //                 }
+    //             }
+    //         };
+    //     });
 
-        for (let i = 0; i < workBatches.length; i++) {
-            workers[i % workers.length].postMessage(workBatches[i]);
-        }
+    //     for (let i = 0; i < workBatches.length; i++) {
+    //         workers[i % workers.length].postMessage(workBatches[i]);
+    //     }
 
-        return promise;
-    }
+    //     return promise;
+    // }
 
     /** Searches for the optimal move given the game state.
      * Uses @method miniMaxAlphaBetaPruning to find the value of each legal move up to a depth.
@@ -161,12 +161,12 @@ export class Agent {
     //     return bestMove;
     // }
 
-     /** Searches for the optimal move given the game state.
-     * Uses @method miniMaxAlphaBetaPruning to find the value of each legal move up to a depth.
-     * @param {number} [depth=6] -          The maximum search depth, which by default is 6.
-     * @param {State} [state=this.state] -  The current state of the game. If null, the internal reference to the game state is used.
-     */
-     async generateOptimalMoveSingleThreaded(depth: number = 6, state: State = this.state) {
+    /** Searches for the optimal move given the game state.
+    * Uses @method miniMaxAlphaBetaPruning to find the value of each legal move up to a depth.
+    * @param {number} [depth=6] -          The maximum search depth, which by default is 6.
+    * @param {State} [state=this.state] -  The current state of the game. If null, the internal reference to the game state is used.
+    */
+    async generateOptimalMoveSingleThreaded(depth: number = 6, state: State = this.state) {
         const LONG_SEARCH = depth;
         const SHORT_SEARCH = 4;
 

@@ -1,9 +1,7 @@
 import type p5_T from "p5";
 import { State } from "./state";
-// import p5 from "../libs/p5.min.js";
-// import { width as wwidth } from "./sketch";
 
-const width = 900;
+
 export const game = {
     none: 0,
     X: 1,
@@ -59,13 +57,13 @@ export function findSubBoardWins(p: p5_T, state: State, showDrawing: boolean) {
                 if (!winner) continue;
 
                 state.subBoardStates[yOffset][xOffset] = winner;
-                
+
                 if (showDrawing) drawSubBoardWin(p, wLine, xOffset * 3, yOffset * 3);
                 if (winner != game.none) break;     // Only draw one winning line per sub-board
             }
         }
     }
-    
+
 }
 
 /** Loops through the state to find winning lines within sub-boards.
@@ -81,12 +79,12 @@ export function findSubBoardWinsForAI(state: State) {
                 if (!winner) continue;
 
                 state.subBoardStates[yOffset][xOffset] = winner;
-                
+
                 if (winner != game.none) break;     // Only draw one winning line per sub-board
             }
         }
     }
-    
+
 }
 
 // /** Loops through the state to find winning lines within sub-boards.
@@ -194,7 +192,7 @@ function drawSubBoardWin(p: p5_T, wLine: number[][], xOffset: number, yOffset: n
     if (!wLine)
         return;
 
-    const wh = width / BOARD_LEN;
+    const wh = p.width / BOARD_LEN;
     const wl = wLine;
     const xoffset = 0.5;
     const yoffset = 0.5;
@@ -265,7 +263,7 @@ export function isValid(movex: number, movey: number, state: State): boolean {
  * @param {number} movey - The move's y coordinate.
  * @returns {object} returns the parent sub-board coordinates in an object with an x and y component.
  */
-function getParentSubBoard(movex: number, movey: number): {x: number, y: number} {
+function getParentSubBoard(movex: number, movey: number): { x: number, y: number } {
     const x = Math.floor(movex / 3);
     const y = Math.floor(movey / 3);
     return { x, y };
@@ -277,7 +275,7 @@ function getParentSubBoard(movex: number, movey: number): {x: number, y: number}
  * @param {number} movey - The move's y coordinate.
  * @returns {object} The coordinates of sub-board that the next move should be in. Inside an object with an x and y component.
  */
-export function getNextSubBoard(movex: number, movey: number): {x: number, y: number} {
+export function getNextSubBoard(movex: number, movey: number): { x: number, y: number } {
     const x = movex % 3;
     const y = movey % 3;
 
