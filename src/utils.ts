@@ -197,7 +197,7 @@ function drawSubBoardWin(p: p5_T, wLine: number[][], xOffset: number, yOffset: n
     const xoffset = 0.5;
     const yoffset = 0.5;
 
-    p.strokeWeight(7);
+    p.strokeWeight(p.floor(p.width / 121));
     p.stroke(0, 220, 0);
     p.line(wh * (wl[0][1] + xoffset + xOffset), wh * (wl[0][0] + yoffset + yOffset),
         wh * (wl[2][1] + xoffset + xOffset), wh * (wl[2][0] + yoffset + yOffset));

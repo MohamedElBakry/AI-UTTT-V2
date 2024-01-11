@@ -30,6 +30,13 @@ export function sketch(p: p5_T, state: State) {
         state.turn = agentX.opponentPiece;
     }
 
+    p.windowResized = function(ev) {
+        console.log(this.windowHeight, this.windowWidth);
+        const WH_New = p.ceil(p.min(this.windowHeight, this.windowWidth) / 1.24);
+        p.resizeCanvas(WH_New, WH_New);
+    }
+
+
     p.mouseClicked = mouseClicked;
 
     p.draw = function() {
@@ -40,7 +47,8 @@ export function sketch(p: p5_T, state: State) {
 
         const [width, height] = [p.width, p.height]; // for ease instead of writing p5.width... 
 
-        p.strokeWeight(4);
+        const scaledWeight = p.floor(width / 212);
+        p.strokeWeight(scaledWeight);
         p.stroke(0);
         p.noFill();
 
@@ -54,7 +62,7 @@ export function sketch(p: p5_T, state: State) {
                 let xp = w * y + w / 2;
                 let yp = h * x + h / 2;
 
-                p.strokeWeight(4);
+                p.strokeWeight(scaledWeight);
                 if (pos == game.O) {
                     p.ellipse(xp, yp, w / 2);  // Radius is w / 2 to make the circle slightly smaller than the square its in.
                 }
@@ -118,7 +126,7 @@ export function sketch(p: p5_T, state: State) {
 
     // /* Draw loop helper functions */
     function highlightNextSubBoard(w: number, h: number) {
-        p.strokeWeight(10);
+        p.strokeWeight(p.floor(p.width / 85.5));
         p.stroke(0, 125, 255);
 
         const [sbx, sby] = [nextSubBoardToPlay[0], nextSubBoardToPlay[1]];
@@ -133,7 +141,7 @@ export function sketch(p: p5_T, state: State) {
 
     function drawThickerVerticalLines(x: number, w: number) {
         if ((x + 1) % 3 == 0) {
-            p.strokeWeight(10);
+            p.strokeWeight(p.floor(p.width / 85.5));
             p.line(w * (x + 1), 0, w * (x + 1), p.height);
         }
     }
@@ -145,7 +153,7 @@ export function sketch(p: p5_T, state: State) {
 
         // Thicker/weightier because this is a seperate sub-board.
         if ((y + 1) % 3 == 0) {
-            p.strokeWeight(10);
+            p.strokeWeight(p.floor(p.width / 85.5));
             p.line(0, h * (y + 1), p.width, h * (y + 1));
         }
     }
