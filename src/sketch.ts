@@ -18,7 +18,7 @@ export function sketch(p: p5_T, state: State) {
 
     const agentX = new Agent(state, Agent.type.MINIMAX_ALPHA_BETA_PRUNING, Agent.piece.X, false);
     let depth: number;
-    const workers = [...new Array(navigator.hardwareConcurrency)].map(() => new Worker("src/ai-worker new.ts", { type: "module" }));
+    const workers = [...new Array(navigator.hardwareConcurrency)].map(() => new Worker( new URL("./ai-worker-new.ts", import.meta.url), { type: "module" }));
 
     p.setup = function() {
         const WH = 855
@@ -117,7 +117,7 @@ export function sketch(p: p5_T, state: State) {
         // const y = Math.floor(event.offsetX / (p5.width / BOARD_LEN));
         // const x = Math.floor(event.offsetY / (p5.height / BOARD_LEN));
         
-        console.log(state, x, y);
+        // console.log(state, x, y);
         if (!isValid(x, y, state) || game.gameOver || game.draw) {
             return;
         }
