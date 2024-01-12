@@ -13,7 +13,6 @@ import { Agent } from "./ai.ts";
 import { state, BOARD_LEN, board, game, findSubBoardWins, boardWinCheck, isDraw, getSymbol, isValid, getNext, getNextSubBoard, nextSubBoardToPlay } from "./utils.ts";
 import type { State } from "./state.ts";
 
-// console.log(state);
 export function sketch(p: p5_T, state: State) {
 
     const agentX = new Agent(state, Agent.type.MINIMAX_ALPHA_BETA_PRUNING, Agent.piece.X, false);
@@ -21,14 +20,7 @@ export function sketch(p: p5_T, state: State) {
     const workers = [...new Array(navigator.hardwareConcurrency)].map(() => new Worker( new URL("./ai-worker-new.ts", import.meta.url), { type: "module" }));
 
     p.setup = function() {
-        const WH = 855
-
-        // const w = new Worker("src/ai-worker new.ts", { type: "module" });
-        // w.onmessage = (event) => {
-            // console.log("from worker:", event);
-        // }
-        // w.postMessage("asd");
-
+        const WH = p.ceil(p.min(this.windowHeight, this.windowWidth) / 1.24);
         p.createCanvas(WH, WH);
         // Allow the Agent to make the first move. Comment to allow the human to play first.
         // makeAIMove();
@@ -39,7 +31,6 @@ export function sketch(p: p5_T, state: State) {
     }
 
     p.windowResized = function(ev) {
-        // console.log(this.windowHeight, this.windowWidth);
         const WH_New = p.ceil(p.min(this.windowHeight, this.windowWidth) / 1.24);
         p.resizeCanvas(WH_New, WH_New);
     }
@@ -96,10 +87,10 @@ export function sketch(p: p5_T, state: State) {
         const winner = boardWinCheck(state.subBoardStates);
         game.draw = isDraw(state.board);
 
-        if (winner) {
+        if (winner && !game.gameOver) {
             const paragraph = document.createElement("p");
             paragraph.style.fontSize = "xxx-large";
-            paragraph.innerText = `${getSymbol(winner)} wins!!!`;
+            paragraph.innerText = `${getSymbol(winner)} wins!`;
             document.querySelector("body")?.appendChild(paragraph);
             console.log("VICTORY FOR", getSymbol(winner));
             game.gameOver = true;
