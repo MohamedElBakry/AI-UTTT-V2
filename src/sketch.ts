@@ -20,7 +20,7 @@ export function sketch(p: p5_T, state: State) {
     const workers = [...new Array(navigator.hardwareConcurrency)].map(() => new Worker( new URL("./ai-worker-new.ts", import.meta.url), { type: "module" }));
 
     p.setup = function() {
-        const WH = p.ceil(p.min(this.windowHeight, this.windowWidth) / 1.24);
+        const WH = p.ceil(p.min(this.windowHeight, this.windowWidth) / 1.24);   // Decrease divisor to increase the Canvas size
         p.createCanvas(WH, WH);
         // Allow the Agent to make the first move. Comment to allow the human to play first.
         // makeAIMove();
