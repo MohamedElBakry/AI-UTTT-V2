@@ -10,7 +10,7 @@ import type p5_T from "p5";
 
 // import { State } from "./state.ts";
 import { Agent } from "./ai.ts";
-import { state, BOARD_LEN, board, game, findSubBoardWins, boardWinCheck, isDraw, getSymbol, isValid, getNext, getNextSubBoard, nextSubBoardToPlay } from "./utils.ts";
+import { BOARD_LEN, board, game, findSubBoardWins, boardWinCheck, isDraw, getSymbol, isValid, getNext, getNextSubBoard, nextSubBoardToPlay } from "./utils.ts";
 import type { State } from "./state.ts";
 
 export function sketch(p: p5_T, state: State) {
