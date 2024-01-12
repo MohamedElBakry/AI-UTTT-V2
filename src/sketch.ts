@@ -12,21 +12,29 @@ import type p5_T from "p5";
 import { Agent } from "./ai.ts";
 import { state, BOARD_LEN, board, game, findSubBoardWins, boardWinCheck, isDraw, getSymbol, isValid, getNext, getNextSubBoard, nextSubBoardToPlay } from "./utils.ts";
 import type { State } from "./state.ts";
-// export const [width, height] = [p5.width, p5.height]; // for ease instead of writing p5.width... 
 
 console.log(state);
 export function sketch(p: p5_T, state: State) {
 
-    const agentX = new Agent(state, Agent.type.MINIMAX_ALPHA_BETA_PRUNING, Agent.piece.X, true);
+    const agentX = new Agent(state, Agent.type.MINIMAX_ALPHA_BETA_PRUNING, Agent.piece.X, false);
     let depth: number;
+    const workers = [...new Array(navigator.hardwareConcurrency)].map(() => new Worker("src/ai-worker new.ts", { type: "module" }));
 
     p.setup = function() {
         const WH = 855
+
+        // const w = new Worker("src/ai-worker new.ts", { type: "module" });
+        // w.onmessage = (event) => {
+            // console.log("from worker:", event);
+        // }
+        // w.postMessage("asd");
+
         p.createCanvas(WH, WH);
         // Allow the Agent to make the first move. Comment to allow the human to play first.
         // makeAIMove();
         // We run it once to warm up the function as the first run seems to be the slowest.
-        agentX.generateOptimalMoveSingleThreaded(depth);
+        // agentX.generateOptimalMoveSingleThreaded(depth);
+        agentX.generateOptimalMove(depth, workers);
         state.turn = agentX.opponentPiece;
     }
 
@@ -121,7 +129,7 @@ export function sketch(p: p5_T, state: State) {
         nextSubBoardToPlay[0] = subBoardCoords.y;
         nextSubBoardToPlay[1] = subBoardCoords.x;
 
-        makeAIMove();
+        makeAIMove(workers);
     }
 
     // /* Draw loop helper functions */
@@ -164,7 +172,7 @@ export function sketch(p: p5_T, state: State) {
         p.line(xp - xr, yp - xr, xp + xr, yp + xr);
     }
 
-    function makeAIMove() {
+    function makeAIMove(workers: Worker[]) {
         // if (depth === undefined) {
         //   depth = +prompt("How many turns ahead do you want the AI to look? (higher -> more challenging) — 6 is recommended.");
         //   depth = depth ? depth : 6;
@@ -172,7 +180,10 @@ export function sketch(p: p5_T, state: State) {
         // Call the ai move slightly later to allow the draw loop to show the human's previous move.
         setTimeout(async () => {
             p.noLoop();
-            const aiMove = await agentX.generateOptimalMoveSingleThreaded(depth) as {x: number, y: number};
+            console.log("aiMove")
+            // const aiMove = await agentX.generateOptimalMoveSingleThreaded(depth) as {x: number, y: number};
+            const aiMove = await agentX.generateOptimalMove(depth, workers) as {x: number, y: number};
+            console.log("after", aiMove)
             p.loop();
             state.board[aiMove.x][aiMove.y] = agentX.piece;
             state.previousMove = aiMove;
@@ -181,6 +192,7 @@ export function sketch(p: p5_T, state: State) {
             const subBoardCoords = getNextSubBoard(aiMove.x, aiMove.y);
             nextSubBoardToPlay[0] = subBoardCoords.y;
             nextSubBoardToPlay[1] = subBoardCoords.x;
+
         }, 100);
     }
 }

@@ -42,18 +42,21 @@ export class Agent {
         this.type = type;
         this.piece = piece;
         this.opponentPiece = piece === Agent.piece.X ? Agent.piece.O : piece;
-        if (!isWorker)
-            this.workers = [...Array(navigator.hardwareConcurrency)].map(_ => new Worker("src/ai-worker.js"));   // src/ai-worker.js because this is relative to the index.html's path and not *this* JS file :) 
-    }
+        // if (!isWorker) {
+        //     this.workers = [...Array(navigator.hardwareConcurrency)].map( () => new Worker("/src/ai-worker new.ts"), { type: "module" });   // src/ai-worker.js because this is relative to the index.html's path and not *this* JS file :) 
+        //     console.log(this.workers);
+        // }
+        }
 
     /**
      * Create an AI Object from a string
      * @param {String} string The string to create the Agent from.
      */
-    // static workerFrom(string: string) {
-    //     const agentObj = JSON.parse(string);
-    //     return new Agent(agentObj.state, agentObj.type, agentObj.piece, true);
-    // }
+    static workerFrom(string: string) {
+        const agentObj = JSON.parse(string);
+        console.log(agentObj)
+        return new Agent(agentObj.state, agentObj.type, agentObj.piece, true);
+    }
 
     /** Generates an array of {x, y} object legal moves given the board state.
      * @param {State} state The current state of the game.
@@ -80,86 +83,91 @@ export class Agent {
         return localState;
     }
 
-    // async getScoresFromThreads(workBatches: any, numWorkers: number, workers: any) {
-    //     const results: [number, number][] = [];
-    //     // const workers = [...Array(numWorkers)].map(_ => new Worker("ai-worker.js"));
-    //     let workDone = 0;
+    async getScoresFromThreads(workBatches: any, numWorkers: number, workers: any): Promise<[number, number][]> {
+        const results: [number, number][] = [];
+        // const workers = [...Array(numWorkers)].map(_ => new Worker("src/ai-worker new.ts", {type: "module"}));
+        let workDone = 0;
 
-    //     const promise = new Promise((resolve, _) => {
-    //         for (const worker of workers) {
-    //             worker.onmessage = (event: any) => {
-    //                 workDone++;
-    //                 const [score, move] = event.data;
-    //                 // const [score, move] = [event.data[0], workBatches[i % numWorkers][6]];
-    //                 if (typeof score !== 'number')
-    //                     return;
+        const promise = new Promise((resolve, _) => {
+            for (const worker of workers) {
+                // define what to do when the worker responds with the work's result
+                worker.onmessage = (event: any) => {
+                    console.log(event);
+                    workDone++;
+                    const [score, move] = event.data;
+                    // const [score, move] = [event.data[0], workBatches[i % numWorkers][6]];
+                    if (typeof score !== 'number')
+                        return;
 
-    //                 results.push([score, move]);
-    //                 if (workDone === workBatches.length) {
-    //                     resolve([results]);
-    //                 }
-    //             }
-    //         };
-    //     });
+                    results.push([score, move]);
+                    if (workDone === workBatches.length) {
+                        resolve([results]);
+                    }
+                }
+            };
+        });
 
-    //     for (let i = 0; i < workBatches.length; i++) {
-    //         workers[i % workers.length].postMessage(workBatches[i]);
-    //     }
+        // send the worker the work
+        for (let i = 0; i < workBatches.length; i++) {
+            workers[i % workers.length].postMessage(workBatches[i]);
+        }
 
-    //     return promise;
-    // }
+        return promise as any;
+    }
 
     /** Searches for the optimal move given the game state.
      * Uses @method miniMaxAlphaBetaPruning to find the value of each legal move up to a depth.
      * @param {number} [depth=6] -          The maximum search depth, which by default is 6.
      * @param {State} [state=this.state] -  The current state of the game. If null, the internal reference to the game state is used.
      */
-    // async generateOptimalMove(depth: number = 6, state: State = this.state) {
-    //     const LONG_SEARCH = depth;
-    //     const SHORT_SEARCH = 4;
+    async generateOptimalMove(depth: number = 6, workers: Worker[], state: State = this.state) {
+        const LONG_SEARCH = depth;
+        const SHORT_SEARCH = 4;
 
-    //     let bestScore = -Infinity;
-    //     let bestMove;
-    //     let localState = new State(state.board, state.subBoardStates, state.previousMove, state.turn, true);
-    //     // console.time("ai best move reply time");
+        let bestScore = -Infinity;
+        let bestMove;
+        let localState = new State(state.board, state.subBoardStates, state.previousMove, state.turn, true);
+        // console.time("ai best move reply time");
 
-    //     const moves = Agent.getLegalMoves(localState);
-    //     depth = (moves.length <= 9) ? LONG_SEARCH : SHORT_SEARCH;
-    //     const workBatches = [];
-    //     for (const move of moves) {
-    //         const truePrevious = localState.previousMove;
-    //         localState = this.simulateMove(localState, move);
-    //         workBatches.push(
-    //             [JSON.stringify(this), depth, JSON.parse(JSON.stringify(localState)), -Infinity, Infinity, false, move]
-    //         );
-    //         localState.board[move.x][move.y] = game.none;
-    //         localState.previousMove = truePrevious;
-    //     }
+        const moves = Agent.getLegalMoves(localState);
+        depth = (moves.length <= 9) ? LONG_SEARCH : SHORT_SEARCH;
+        const workBatches = [];
+        for (const move of moves) {
+            const truePrevious = localState.previousMove;
+            localState = this.simulateMove(localState, move);
+            workBatches.push(
+                [JSON.stringify(this), depth, JSON.parse(JSON.stringify(localState)), -Infinity, Infinity, false, move]
+            );
+            localState.board[move.x][move.y] = game.none;
+            localState.previousMove = truePrevious;
+        }
 
-    //     console.time("threaded");
-    //     // const [scoreMovePairs] = await this.getScoresFromThreads(workBatches, navigator.hardwareConcurrency, this.workers);
-    //     console.timeEnd("threaded");
+        console.time("threaded");
+        //@ts-ignore
+        const [scoreMovePairs] = await this.getScoresFromThreads(workBatches, navigator.hardwareConcurrency, workers);
+        console.timeEnd("threaded");
 
-    //     for (const [score, move] of scoreMovePairs) {
-    //         if (score > bestScore) {
-    //             bestScore = score;
-    //             bestMove = move;
-    //         }
-    //         // console.log(`Move at (${++i}/${moves.length}):`, move, score);   
-    //         console.log("Moves with their scores:", move, score);
-    //     }
+        //@ts-ignore
+        for (const [score, move] of scoreMovePairs) {
+            if (score > bestScore) {
+                bestScore = score;
+                bestMove = move;
+            }
+            // console.log(`Move at (${++i}/${moves.length}):`, move, score);   
+            console.log("Moves with their scores:", move, score);
+        }
 
-    //     // If no move has been found then just select the final move anyway as they are all leading to a loss
-    //     if (bestScore == -Infinity) {
-    //         bestMove = moves[moves.length - 1];
-    //         // console.log("High probability of loss detected, picking the final move.");
-    //     }
+        // If no move has been found then just select the final move anyway as they are all leading to a loss
+        if (bestScore == -Infinity) {
+            bestMove = moves[moves.length - 1];
+            // console.log("High probability of loss detected, picking the final move.");
+        }
 
-    //     // console.timeEnd("ai best move reply time");
-    //     console.log("Move selected at", bestMove, "with score", bestScore, "at depth", depth, "— cores:", navigator.hardwareConcurrency);
+        // console.timeEnd("ai best move reply time");
+        console.log("Move selected at", bestMove, "with score", bestScore, "at depth", depth, "— cores:", navigator.hardwareConcurrency);
 
-    //     return bestMove;
-    // }
+        return bestMove;
+    }
 
     /** Searches for the optimal move given the game state.
     * Uses @method miniMaxAlphaBetaPruning to find the value of each legal move up to a depth.
