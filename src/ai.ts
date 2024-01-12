@@ -54,7 +54,6 @@ export class Agent {
      */
     static workerFrom(string: string) {
         const agentObj = JSON.parse(string);
-        console.log(agentObj)
         return new Agent(agentObj.state, agentObj.type, agentObj.piece, true);
     }
 
@@ -92,7 +91,6 @@ export class Agent {
             for (const worker of workers) {
                 // define what to do when the worker responds with the work's result
                 worker.onmessage = (event: any) => {
-                    console.log(event);
                     workDone++;
                     const [score, move] = event.data;
                     // const [score, move] = [event.data[0], workBatches[i % numWorkers][6]];

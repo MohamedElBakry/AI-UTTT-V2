@@ -13,7 +13,7 @@ import { Agent } from "./ai.ts";
 import { state, BOARD_LEN, board, game, findSubBoardWins, boardWinCheck, isDraw, getSymbol, isValid, getNext, getNextSubBoard, nextSubBoardToPlay } from "./utils.ts";
 import type { State } from "./state.ts";
 
-console.log(state);
+// console.log(state);
 export function sketch(p: p5_T, state: State) {
 
     const agentX = new Agent(state, Agent.type.MINIMAX_ALPHA_BETA_PRUNING, Agent.piece.X, false);
@@ -39,7 +39,7 @@ export function sketch(p: p5_T, state: State) {
     }
 
     p.windowResized = function(ev) {
-        console.log(this.windowHeight, this.windowWidth);
+        // console.log(this.windowHeight, this.windowWidth);
         const WH_New = p.ceil(p.min(this.windowHeight, this.windowWidth) / 1.24);
         p.resizeCanvas(WH_New, WH_New);
     }
@@ -100,7 +100,7 @@ export function sketch(p: p5_T, state: State) {
             const paragraph = document.createElement("p");
             paragraph.style.fontSize = "xxx-large";
             paragraph.innerText = `${getSymbol(winner)} wins!!!`;
-            // document.querySelector("#sketch")?.appendChild(paragraph);
+            document.querySelector("body")?.appendChild(paragraph);
             console.log("VICTORY FOR", getSymbol(winner));
             game.gameOver = true;
             p.noLoop();
@@ -180,10 +180,10 @@ export function sketch(p: p5_T, state: State) {
         // Call the ai move slightly later to allow the draw loop to show the human's previous move.
         setTimeout(async () => {
             p.noLoop();
-            console.log("aiMove")
+            // console.log("aiMove")
             // const aiMove = await agentX.generateOptimalMoveSingleThreaded(depth) as {x: number, y: number};
             const aiMove = await agentX.generateOptimalMove(depth, workers) as {x: number, y: number};
-            console.log("after", aiMove)
+            // console.log("after", aiMove)
             p.loop();
             state.board[aiMove.x][aiMove.y] = agentX.piece;
             state.previousMove = aiMove;
