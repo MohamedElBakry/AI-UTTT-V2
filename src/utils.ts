@@ -224,7 +224,11 @@ export function getNext(player: number): number {
  */
 export function isValid(movex: number, movey: number, state: State): boolean {
 
-    // previousMove has not been set yet, so it's the first move of the game and is always valid
+    // Ensure click is within bounds of the 9x9 board.
+    if (((movex < 0 || movex > 8 ) || (movey < 0 || movey > 8)))
+        return false;
+
+    // previousMove has not been set yet, so it's the first move of the game and is always valid.
     if (state.previousMove === null)
         return true;
 
@@ -234,7 +238,7 @@ export function isValid(movex: number, movey: number, state: State): boolean {
 
     const pickedSubBoard = getParentSubBoard(movex, movey);
 
-    const subBoardToPlay = getNextSubBoard(state.previousMove.x, state.previousMove.y);
+    const subBoardToPlay = getNextSubBoard(state.previousMove.x!, state.previousMove.y!);
     const isPickedCorrectSubBoard = (pickedSubBoard.x == subBoardToPlay.x) && (pickedSubBoard.y == subBoardToPlay.y);
     const isPickedSubBoardEmpty = state.subBoardStates[pickedSubBoard.x][pickedSubBoard.y] == game.none;
 

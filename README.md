@@ -35,6 +35,33 @@ Finally, while playing you may press `F12` then select the `Console` tab to see 
 2. UI Clarifications:
     * Sub-board victory/draw. Cover the sub-board with the enlarged symbol of the winning player. 'Grey-out' a drawn sub-board.
     * Game victory/draw.
+    * Potential move highlight with right-click
+    * Evaluation Bar
 3. Rules section 
+4. Undo/Redo Move and Reset buttons.
+5. Aggregate data and track win-rate iterations over AI.
 
 *Feel free to provide suggestions.* :) 
+
+## Rules
+Ultimate Tic Tac Toe (UTTT) is a complex variant of the traditional Tic Tac Toe that requires strategic depth due to its additional layer of gameplay. Here are some strategies that might help you win at UTTT:
+
+Center Control: Try to take control of the central squares of the main board as well as the central mini-boards. The central positions are advantageous because they allow more opportunities to create a line.
+
+Force Plays: Make moves that force your opponent to play in a particular mini-board where you can set up a win. This is a key strategy in UTTT and involves thinking several moves ahead.
+
+Two-Way Wins: Attempt to create scenarios where you have two potential ways to win in a mini-board, forcing the opponent to block one and allowing you to win with the other.
+
+Defensive Play: Always be on the lookout for moves that might give your opponent a two-way win and block them. Sometimes playing defensively and blocking your opponent can be as important as trying to win a mini-board.
+
+Corner Play: Occupying corners can be a strategic move because each corner square is part of three potential winning lines (vertical, horizontal, and diagonal).
+
+Plan B: Always have a fallback plan. If you are sent to a mini-board where you cannot win, try to position yourself to be sent to a favorable mini-board next or to at least block your opponent.
+
+Randomness: In the early game, it might be beneficial to play in such a way that the board stays open and your moves are less predictable. This can make it harder for your opponent to plan.
+
+Avoiding Draws: Be cautious about winning a mini-board that could lead to a draw in the main board. Sometimes not winning a mini-board immediately can be strategic.
+
+Remember, each move in UTTT not only affects the mini-board you're playing in but also determines which mini-board your opponent must play in next. This "send" mechanic is crucial and should always be considered before making a move.
+
+Lastly, practice different scenarios. UTTT has a much larger state space than traditional Tic Tac Toe, and the best way to get better is to play multiple games and learn from each outcome.

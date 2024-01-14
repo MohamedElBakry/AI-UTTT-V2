@@ -7,10 +7,8 @@
 
 import type p5_T from "p5";
 
-
-// import { State } from "./state.ts";
 import { Agent } from "./ai.ts";
-import { BOARD_LEN, board, game, findSubBoardWins, boardWinCheck, isDraw, getSymbol, isValid, getNext, getNextSubBoard, nextSubBoardToPlay } from "./utils.ts";
+import { BOARD_LEN, board, game, findSubBoardWins, boardWinCheck, isDraw, getSymbol, isValid, getNext, getNextSubBoard, nextSubBoardToPlay, subBoardWinCheck } from "./utils.ts";
 import type { State } from "./state.ts";
 
 export function sketch(p: p5_T, state: State) {
@@ -35,6 +33,40 @@ export function sketch(p: p5_T, state: State) {
         p.resizeCanvas(WH_New, WH_New);
     }
 
+    document.querySelector("button#undo")?.addEventListener("click", () => { 
+        console.log("Undo");
+        
+        // p.noLoop() occurs at the end of the game. this ensures the player can undo even after a game over
+        if (!p.isLooping()) {
+            p.loop();
+            game.gameOver = false;
+            document.querySelector("#gameResult")?.remove();
+        }
+
+        state.undo();
+
+        boardWinCheck(state.subBoardStates);
+
+        if (state.previousMove === null)
+            return;
+
+        const [x, y] = [state.previousMove.x, state.previousMove.y];
+        let subBoardCoords = getNextSubBoard(x, y);
+        nextSubBoardToPlay[0] = subBoardCoords.y;
+        nextSubBoardToPlay[1] = subBoardCoords.x;
+    });
+
+    document.querySelector("button#reset")?.addEventListener("click", () => {
+        console.log("Reset");
+        state.reset(game.O);
+
+        if (!p.isLooping()) {
+            p.loop();
+            game.gameOver = false;
+            document.querySelector("#gameResult")?.remove();
+        }
+        
+    });
 
     p.mouseClicked = mouseClicked;
 
@@ -60,8 +92,9 @@ export function sketch(p: p5_T, state: State) {
                 let pos = board[x][y];
                 let xp = w * y + w / 2;
                 let yp = h * x + h / 2;
-
+                
                 p.strokeWeight(scaledWeight);
+                // p.text(`${x}, ${y}`, xp - scaledWeight / 2, yp - scaledWeight / 2);
                 if (pos == game.O) {
                     p.ellipse(xp, yp, w / 2);  // Radius is w / 2 to make the circle slightly smaller than the square its in.
                 }
@@ -89,6 +122,7 @@ export function sketch(p: p5_T, state: State) {
 
         if (winner && !game.gameOver) {
             const paragraph = document.createElement("p");
+            paragraph.id = "gameResult"
             paragraph.style.fontSize = "xxx-large";
             paragraph.innerText = `${getSymbol(winner)} wins!`;
             document.querySelector("body")?.appendChild(paragraph);
@@ -98,17 +132,14 @@ export function sketch(p: p5_T, state: State) {
         }
     }
 
-    /* When the mouse is clicked, if the do the move if it's valid, then let the AI reply  */
+    /* When the mouse is clicked, do the move if it's valid, then let the AI reply  */
     function mouseClicked() {
 
         
         const y = Math.floor(p.mouseX / (p.width / BOARD_LEN));
         const x = Math.floor(p.mouseY / (p.height / BOARD_LEN));
-
-        // const y = Math.floor(event.offsetX / (p5.width / BOARD_LEN));
-        // const x = Math.floor(event.offsetY / (p5.height / BOARD_LEN));
         
-        // console.log(state, x, y);
+        console.log(state, x, y);
         if (!isValid(x, y, state) || game.gameOver || game.draw) {
             return;
         }
@@ -116,9 +147,12 @@ export function sketch(p: p5_T, state: State) {
         state.board[x][y] = state.turn;
         state.previousMove = { y, x };
         state.turn = getNext(state.turn);
+
         let subBoardCoords = getNextSubBoard(x, y);
         nextSubBoardToPlay[0] = subBoardCoords.y;
         nextSubBoardToPlay[1] = subBoardCoords.x;
+
+        state.moveHistory.push({turn: state.turn, x, y})
 
         makeAIMove(workers);
     }
@@ -180,6 +214,8 @@ export function sketch(p: p5_T, state: State) {
             state.previousMove = aiMove;
             state.turn = agentX.opponentPiece;
 
+            state.moveHistory.push({turn: state.turn, x: aiMove.x, y: aiMove.y});
+
             const subBoardCoords = getNextSubBoard(aiMove.x, aiMove.y);
             nextSubBoardToPlay[0] = subBoardCoords.y;
             nextSubBoardToPlay[1] = subBoardCoords.x;
@@ -187,9 +223,3 @@ export function sketch(p: p5_T, state: State) {
         }, 100);
     }
 }
-
-// export const p5sketch = () => new p5((p5: p5_T) => sketch(p5, state));
-// export const p5sketch = () => new p5(sketch(p5));
-// let myp5 = new p5(sketch)
-// Mobile support if needed.
-// touchStarted = mouseClicked;
